@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categories - GROCIFY</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-shopping-basket"></i>
+                <span>GROCIFY</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                    <li><a href="products.html"><i class="fas fa-box"></i> Products</a></li>
+                    <li class="active"><a href="categories.html"><i class="fas fa-tags"></i> Categories</a></li>
+                    <li><a href="suppliers.html"><i class="fas fa-truck"></i> Suppliers</a></li>
+                    <li><a href="sales.html"><i class="fas fa-file-invoice-dollar"></i> Sales/Billing</a></li>
+                    <li><a href="reports.html"><i class="fas fa-file-alt"></i> Reports</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <p>&copy; 2026 GROCIFY</p>
+                <p>DBMS Semester Project</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-nav">
+                <div class="page-title">
+                    <h1>Category Management</h1>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="showModal('category-modal')">
+                        <i class="fas fa-plus"></i> Add New Category
+                    </button>
+                </div>
+            </header>
+
+            <section class="activity-card">
+                <div class="card-header">
+                    <h2>Available Categories</h2>
+                </div>
+                <div class="table-container">
+                    <table id="categories-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Category Name</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Category Modal -->
+    <div id="category-modal" class="modal-backdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Add New Category</h2>
+                <button class="btn btn-outline btn-sm" onclick="hideModal('category-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="category-form">
+                    <div class="form-group">
+                        <label>Category Name</label>
+                        <input type="text" id="category-name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="category-description" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="hideModal('category-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveCategory()">Save Category</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', loadCategories);
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                const categories = await response.json();
+                
+                const tableBody = document.querySelector('#categories-table tbody');
+                tableBody.innerHTML = '';
+                
+                categories.forEach(c => {
+                    const row = `
+                        <tr>
+                            <td>#${c.category_id}</td>
+                            <td><strong>${c.category_name}</strong></td>
+                            <td>${c.description || 'No description'}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            } catch (err) {
+                console.error('Error loading categories:', err);
+            }
+        }
+
+        async function saveCategory() {
+            const data = {
+                category_name: document.getElementById('category-name').value,
+                description: document.getElementById('category-description').value
+            };
+
+            try {
+                const response = await fetch('/api/categories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    hideModal('category-modal');
+                    loadCategories();
+                    document.getElementById('category-form').reset();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.error);
+                }
+            } catch (err) {
+                console.error('Error saving category:', err);
+            }
+        }
+    </script>
+</body>
+</html>

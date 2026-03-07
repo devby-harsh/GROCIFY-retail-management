@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales & Billing - GROCIFY</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-shopping-basket"></i>
+                <span>GROCIFY</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                    <li><a href="products.html"><i class="fas fa-box"></i> Products</a></li>
+                    <li><a href="categories.html"><i class="fas fa-tags"></i> Categories</a></li>
+                    <li><a href="suppliers.html"><i class="fas fa-truck"></i> Suppliers</a></li>
+                    <li class="active"><a href="sales.html"><i class="fas fa-file-invoice-dollar"></i> Sales/Billing</a></li>
+                    <li><a href="reports.html"><i class="fas fa-file-alt"></i> Reports</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <p>&copy; 2026 GROCIFY</p>
+                <p>DBMS Semester Project</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-nav">
+                <div class="page-title">
+                    <h1>Sales & Billing</h1>
+                </div>
+            </header>
+
+            <section class="billing-grid">
+                <!-- Product Selection -->
+                <div class="activity-card">
+                    <div class="card-header">
+                        <h2>Select Products</h2>
+                        <div class="search-box">
+                            <input type="text" id="billing-search" placeholder="Search product name or SKU..." class="form-control" onkeyup="filterBillingProducts()">
+                        </div>
+                    </div>
+                    <div class="table-container" style="max-height: 500px;">
+                        <table id="billing-products-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Cart Summary -->
+                <div class="activity-card checkout-summary">
+                    <div class="card-header">
+                        <h2>Current Sale</h2>
+                        <button class="btn btn-sm btn-outline btn-danger" onclick="clearCart()">Clear All</button>
+                    </div>
+                    <div class="cart-items" id="cart-items">
+                        <!-- Added items will appear here -->
+                    </div>
+                    <div class="summary-details">
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span id="summary-subtotal">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Tax (0%)</span>
+                            <span>$0.00</span>
+                        </div>
+                        <div class="summary-total">
+                            <span>Total</span>
+                            <span id="summary-total">$0.00</span>
+                        </div>
+                        <div class="form-group" style="margin-top: 1rem;">
+                            <label>Payment Method</label>
+                            <select id="payment-method" class="form-control">
+                                <option value="cash">Cash</option>
+                                <option value="card">Card</option>
+                                <option value="online">Online Transfer</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary btn-block" style="width: 100%; margin-top: 1rem; padding: 1rem;" onclick="processSale()">
+                            <i class="fas fa-check-circle"></i> Complete Sale
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <style>
+        .cart-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .cart-item-info h4 { font-size: 0.9rem; margin-bottom: 0.2rem; }
+        .cart-item-info p { font-size: 0.8rem; color: var(--text-muted); }
+        .cart-qty input { width: 50px; text-align: center; padding: 0.25rem; border: 1px solid #e2e8f0; border-radius: 4px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    </style>
+
+    <script src="js/main.js"></script>
+    <script>
+        let products = [];
+        let cart = [];
+
+        document.addEventListener('DOMContentLoaded', loadBillingProducts);
+
+        async function loadBillingProducts() {
+            try {
+                const response = await fetch('/api/products');
+                products = await response.json();
+                renderBillingProducts(products);
+            } catch (err) {
+                console.error('Error loading products:', err);
+            }
+        }
+
+        function renderBillingProducts(items) {
+            const tableBody = document.querySelector('#billing-products-table tbody');
+            tableBody.innerHTML = '';
+            
+            items.forEach(p => {
+                const isOutOfStock = p.stock_quantity <= 0;
+                const row = `
+                    <tr>
+                        <td>
+                            <strong>${p.product_name}</strong>
+                            <div style="font-size: 0.75rem; color: #64748b;">${p.sku}</div>
+                        </td>
+                        <td>₹${parseFloat(p.sale_price).toFixed(2)}</td>
+                        <td><span class="${p.stock_quantity <= p.min_stock_level ? 'text-danger' : ''}">${p.stock_quantity}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" ${isOutOfStock ? 'disabled' : ''} onclick="addToCart(${p.product_id})">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        function filterBillingProducts() {
+            const query = document.getElementById('billing-search').value.toLowerCase();
+            const filtered = products.filter(p => 
+                p.product_name.toLowerCase().includes(query) || 
+                p.sku.toLowerCase().includes(query)
+            );
+            renderBillingProducts(filtered);
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p.product_id === productId);
+            const existingItem = cart.find(item => item.product_id === productId);
+
+            if (existingItem) {
+                if (existingItem.quantity < product.stock_quantity) {
+                    existingItem.quantity++;
+                } else {
+                    alert('Insufficient stock!');
+                }
+            } else {
+                cart.push({
+                    product_id: product.product_id,
+                    product_name: product.product_name,
+                    unit_price: product.sale_price,
+                    quantity: 1
+                });
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cartContainer = document.getElementById('cart-items');
+            cartContainer.innerHTML = '';
+            let subtotal = 0;
+
+            cart.forEach((item, index) => {
+                const itemTotal = item.unit_price * item.quantity;
+                subtotal += itemTotal;
+                
+                const itemHTML = `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <h4>${item.product_name}</h4>
+                            <p>₹${parseFloat(item.unit_price).toFixed(2)}</p>
+                        </div>
+                        <div class="cart-qty">
+                            <input type="number" value="${item.quantity}" min="1" onchange="updateQty(${index}, this.value)">
+                        </div>
+                        <div class="cart-item-total">
+                            ₹${itemTotal.toFixed(2)}
+                        </div>
+                        <button class="btn btn-sm btn-danger" onclick="removeFromCart(${index})">&times;</button>
+                    </div>
+                `;
+                cartContainer.innerHTML += itemHTML;
+            });
+
+            document.getElementById('summary-subtotal').innerText = '₹' + subtotal.toFixed(2);
+            document.getElementById('summary-total').innerText = '₹' + subtotal.toFixed(2);
+        }
+
+        function updateQty(index, qty) {
+            qty = parseInt(qty);
+            const productId = cart[index].product_id;
+            const product = products.find(p => p.product_id === productId);
+
+            if (qty > product.stock_quantity) {
+                alert('Insufficient stock!');
+                cart[index].quantity = product.stock_quantity;
+            } else if (qty < 1) {
+                cart[index].quantity = 1;
+            } else {
+                cart[index].quantity = qty;
+            }
+            updateCartUI();
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function clearCart() {
+            if (confirm('Clear entire cart?')) {
+                cart = [];
+                updateCartUI();
+            }
+        }
+
+        async function processSale() {
+            if (cart.length === 0) {
+                alert('Cart is empty!');
+                return;
+            }
+
+            const total = parseFloat(document.getElementById('summary-total').innerText.replace('₹', ''));
+            const saleData = {
+                user_id: 1, // Default admin for project
+                items: cart,
+                total_amount: total,
+                payment_method: document.getElementById('payment-method').value
+            };
+
+            try {
+                const response = await fetch('/api/sales', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(saleData)
+                });
+
+                if (response.ok) {
+                    alert('Sale completed successfully!');
+                    cart = [];
+                    updateCartUI();
+                    loadBillingProducts(); // Refresh stock counts
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.error);
+                }
+            } catch (err) {
+                console.error('Error processing sale:', err);
+            }
+        }
+    </script>
+</body>
+</html>

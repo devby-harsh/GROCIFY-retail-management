@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Products - GROCIFY</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-shopping-basket"></i>
+                <span>GROCIFY</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                    <li class="active"><a href="products.html"><i class="fas fa-box"></i> Products</a></li>
+                    <li><a href="categories.html"><i class="fas fa-tags"></i> Categories</a></li>
+                    <li><a href="suppliers.html"><i class="fas fa-truck"></i> Suppliers</a></li>
+                    <li><a href="sales.html"><i class="fas fa-file-invoice-dollar"></i> Sales/Billing</a></li>
+                    <li><a href="reports.html"><i class="fas fa-file-alt"></i> Reports</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <p>&copy; 2026 GROCIFY</p>
+                <p>DBMS Semester Project</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-nav">
+                <div class="page-title">
+                    <h1>Product Management</h1>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="showModal('product-modal')">
+                        <i class="fas fa-plus"></i> Add New Product
+                    </button>
+                </div>
+            </header>
+
+            <section class="activity-card">
+                <div class="card-header">
+                    <h2>Inventory List</h2>
+                    <div class="search-box">
+                        <input type="text" id="product-search" placeholder="Search products..." class="form-control" onkeyup="filterProducts()">
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="products-table">
+                        <thead>
+                            <tr>
+                                <th>SKU</th>
+                                <th>Product Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="modal-backdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modal-title">Add New Product</h2>
+                <button class="btn btn-outline btn-sm" onclick="hideModal('product-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="product-form">
+                    <input type="hidden" id="product-id">
+                    <div class="form-group">
+                        <label>Product Name</label>
+                        <input type="text" id="product-name" class="form-control" required>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>SKU Code</label>
+                            <input type="text" id="product-sku" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="product-category" class="form-control" required>
+                                <!-- Categories loaded via JS -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Purchase Price</label>
+                            <input type="number" step="0.01" id="product-purchase-price" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Sale Price</label>
+                            <input type="number" step="0.01" id="product-sale-price" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Initial Stock</label>
+                            <input type="number" id="product-stock" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Min. Stock Level</label>
+                            <input type="number" id="product-min-stock" class="form-control" value="10" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Supplier</label>
+                        <select id="product-supplier" class="form-control" required>
+                            <!-- Suppliers loaded via JS -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="product-description" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="hideModal('product-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .search-box { width: 300px; }
+    </style>
+
+    <script src="js/main.js"></script>
+    <script>
+        let allProducts = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadProducts();
+            await loadDropdowns();
+        });
+
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products');
+                allProducts = await response.json();
+                renderProducts(allProducts);
+            } catch (err) {
+                console.error('Error loading products:', err);
+            }
+        }
+
+        function renderProducts(products) {
+            const tableBody = document.querySelector('#products-table tbody');
+            tableBody.innerHTML = '';
+            
+            products.forEach(p => {
+                const stockClass = p.stock_quantity <= p.min_stock_level ? 'badge danger' : '';
+                const row = `
+                    <tr>
+                        <td><strong>${p.sku}</strong></td>
+                        <td>${p.product_name}</td>
+                        <td>${p.category_name || 'N/A'}</td>
+                        <td>₹${parseFloat(p.sale_price).toFixed(2)}</td>
+                        <td><span class="${stockClass}">${p.stock_quantity}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline" onclick="editProduct(${p.product_id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.product_id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        async function loadDropdowns() {
+            const [catsRes, suppsRes] = await Promise.all([
+                fetch('/api/categories'),
+                fetch('/api/suppliers')
+            ]);
+            
+            const categories = await catsRes.json();
+            const suppliers = await suppsRes.json();
+
+            const catSelect = document.getElementById('product-category');
+            catSelect.innerHTML = '<option value="">Select Category</option>';
+            categories.forEach(c => {
+                catSelect.innerHTML += `<option value="${c.category_id}">${c.category_name}</option>`;
+            });
+
+            const suppSelect = document.getElementById('product-supplier');
+            suppSelect.innerHTML = '<option value="">Select Supplier</option>';
+            suppliers.forEach(s => {
+                suppSelect.innerHTML += `<option value="${s.supplier_id}">${s.supplier_name}</option>`;
+            });
+        }
+
+        function filterProducts() {
+            const query = document.getElementById('product-search').value.toLowerCase();
+            const filtered = allProducts.filter(p => 
+                p.product_name.toLowerCase().includes(query) || 
+                p.sku.toLowerCase().includes(query) ||
+                (p.category_name && p.category_name.toLowerCase().includes(query))
+            );
+            renderProducts(filtered);
+        }
+
+        function editProduct(id) {
+            const p = allProducts.find(item => item.product_id === id);
+            if (!p) return;
+
+            document.getElementById('product-id').value = p.product_id;
+            document.getElementById('product-name').value = p.product_name;
+            document.getElementById('product-sku').value = p.sku;
+            document.getElementById('product-category').value = p.category_id;
+            document.getElementById('product-purchase-price').value = p.purchase_price;
+            document.getElementById('product-sale-price').value = p.sale_price;
+            document.getElementById('product-stock').value = p.stock_quantity;
+            document.getElementById('product-min-stock').value = p.min_stock_level;
+            document.getElementById('product-supplier').value = p.supplier_id;
+            document.getElementById('product-description').value = p.description;
+
+            document.getElementById('modal-title').innerText = 'Edit Product';
+            showModal('product-modal');
+        }
+
+        async function saveProduct() {
+            const id = document.getElementById('product-id').value;
+            const productData = {
+                product_name: document.getElementById('product-name').value,
+                sku: document.getElementById('product-sku').value,
+                category_id: document.getElementById('product-category').value,
+                purchase_price: document.getElementById('product-purchase-price').value,
+                sale_price: document.getElementById('product-sale-price').value,
+                stock_quantity: document.getElementById('product-stock').value,
+                min_stock_level: document.getElementById('product-min-stock').value,
+                supplier_id: document.getElementById('product-supplier').value,
+                description: document.getElementById('product-description').value
+            };
+
+            try {
+                const url = id ? `/api/products/${id}` : '/api/products';
+                const method = id ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(productData)
+                });
+
+                if (response.ok) {
+                    hideModal('product-modal');
+                    loadProducts();
+                    document.getElementById('product-form').reset();
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + error.error);
+                }
+            } catch (err) {
+                console.error('Error saving product:', err);
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Are you sure you want to delete this product?')) return;
+            try {
+                await fetch(`/api/products/${id}`, { method: 'DELETE' });
+                loadProducts();
+            } catch (err) {
+                console.error('Error deleting product:', err);
+            }
+        }
+    </script>
+</body>
+</html>
