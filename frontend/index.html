@@ -1,181 +1,264 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GROCIFY - Grocery Management System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GROCIFY Secure Access</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:Arial, Helvetica, sans-serif;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:
+linear-gradient(rgba(10,25,20,0.72),rgba(10,25,20,0.72)),
+radial-gradient(circle at top right,#2d6a4f,#081c15 65%);
+overflow:hidden;
+}
+
+/* floating glow */
+body::before{
+content:"";
+position:absolute;
+width:420px;
+height:420px;
+background:rgba(201,168,76,0.08);
+border-radius:50%;
+top:-120px;
+right:-100px;
+filter:blur(25px);
+}
+
+body::after{
+content:"";
+position:absolute;
+width:300px;
+height:300px;
+background:rgba(82,183,136,0.08);
+border-radius:50%;
+bottom:-100px;
+left:-80px;
+filter:blur(20px);
+}
+
+.lock-card{
+position:relative;
+z-index:5;
+width:420px;
+max-width:92%;
+padding:38px;
+border-radius:22px;
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(18px);
+border:1px solid rgba(255,255,255,0.15);
+box-shadow:0 20px 50px rgba(0,0,0,0.35);
+animation:fadeUp .7s ease;
+}
+
+@keyframes fadeUp{
+from{
+opacity:0;
+transform:translateY(30px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+.logo{
+width:72px;
+height:72px;
+margin:auto;
+border-radius:18px;
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:30px;
+background:linear-gradient(135deg,#d4af37,#f6e27a);
+color:#173c2f;
+box-shadow:0 10px 25px rgba(212,175,55,0.25);
+margin-bottom:18px;
+}
+
+h1{
+text-align:center;
+font-size:32px;
+letter-spacing:2px;
+color:#f6e27a;
+margin-bottom:8px;
+}
+
+.sub{
+text-align:center;
+color:#d8f3dc;
+font-size:14px;
+margin-bottom:26px;
+opacity:0.95;
+}
+
+.label{
+color:#f1f1f1;
+font-size:14px;
+margin-bottom:8px;
+display:block;
+}
+
+.input-wrap{
+position:relative;
+margin-bottom:18px;
+}
+
+.input-wrap input{
+width:100%;
+padding:14px 46px 14px 14px;
+border-radius:12px;
+border:1px solid rgba(255,255,255,0.14);
+background:rgba(255,255,255,0.08);
+color:white;
+font-size:15px;
+outline:none;
+transition:0.25s;
+}
+
+.input-wrap input:focus{
+border-color:#d4af37;
+box-shadow:0 0 0 3px rgba(212,175,55,0.12);
+}
+
+.input-wrap i{
+position:absolute;
+right:15px;
+top:50%;
+transform:translateY(-50%);
+color:#d4af37;
+cursor:pointer;
+}
+
+.input-wrap input::placeholder{
+color:rgba(255,255,255,0.55);
+}
+
+button{
+width:100%;
+padding:14px;
+border:none;
+border-radius:12px;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+background:linear-gradient(135deg,#d4af37,#b8860b);
+color:#173c2f;
+transition:0.25s;
+}
+
+button:hover{
+transform:translateY(-2px);
+box-shadow:0 12px 25px rgba(212,175,55,0.22);
+}
+
+#error{
+margin-top:14px;
+text-align:center;
+font-size:14px;
+color:#ffb3b3;
+min-height:18px;
+}
+
+.footer{
+margin-top:24px;
+text-align:center;
+font-size:12px;
+color:#d8f3dc;
+opacity:0.8;
+}
+
+@media(max-width:500px){
+.lock-card{
+padding:28px;
+}
+h1{
+font-size:26px;
+}
+}
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="logo">
-                <i class="fas fa-shopping-basket"></i>
-                <span>GROCIFY</span>
-            </div>
-            <nav>
-                <ul>
-                    <li class="active"><a href="index.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-                    <li><a href="products.html"><i class="fas fa-box"></i> Products</a></li>
-                    <li><a href="categories.html"><i class="fas fa-tags"></i> Categories</a></li>
-                    <li><a href="suppliers.html"><i class="fas fa-truck"></i> Suppliers</a></li>
-                    <li><a href="sales.html"><i class="fas fa-file-invoice-dollar"></i> Sales/Billing</a></li>
-                    <li><a href="reports.html"><i class="fas fa-file-alt"></i> Reports</a></li>
-                </ul>
-            </nav>
-            <div class="sidebar-footer">
-                <p>&copy; 2026 GROCIFY</p>
-                <p>DBMS Semester Project</p>
-            </div>
-        </aside>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Top Nav -->
-            <header class="top-nav">
-                <div class="page-title">
-                    <h1>Dashboard</h1>
-                </div>
-                <div class="user-profile">
-                    <span id="current-date"></span>
-                    <div class="user-info">
-                        <img src="https://ui-avatars.com/api/?name=Admin&background=1b4d3e&color=f5d76e" alt="User">
-                        <span>Admin</span>
-                    </div>
-                </div>
-            </header>
+<div class="lock-card">
 
-            <!-- Dashboard Stats -->
-            <section class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon green"><i class="fas fa-boxes"></i></div>
-                    <div class="stat-info">
-                        <h3>Total Products</h3>
-                        <p id="stat-total-products">0</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon gold"><i class="fas fa-dollar-sign"></i></div>
-                    <div class="stat-info">
-                        <h3>Total Sales</h3>
-                        <p id="stat-total-sales">$0.00</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
-                    <div class="stat-info">
-                        <h3>Low Stock Items</h3>
-                        <p id="stat-low-stock">0</p>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon blue"><i class="fas fa-shopping-cart"></i></div>
-                    <div class="stat-info">
-                        <h3>Recent Sales</h3>
-                        <p id="stat-recent-sales-count">0</p>
-                    </div>
-                </div>
-            </section>
+<div class="logo">
+<i class="fas fa-shopping-basket"></i>
+</div>
 
-            <!-- Charts / Recent Activity -->
-            <section class="activity-grid">
-                <div class="activity-card">
-                    <div class="card-header">
-                        <h2>Recent Sales</h2>
-                        <a href="sales.html" class="btn btn-sm btn-outline">View All</a>
-                    </div>
-                    <div class="table-container">
-                        <table id="recent-sales-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Date</th>
-                                    <th>Staff</th>
-                                    <th>Amount</th>
-                                    <th>Payment</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Loaded via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="activity-card">
-                    <div class="card-header">
-                        <h2>System Alerts</h2>
-                    </div>
-                    <div class="alerts-list" id="alerts-list">
-                        <!-- Loaded via JS -->
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
+<h1>GROCIFY</h1>
+<div class="sub">Retail Admin Secure Access</div>
 
-    <script src="js/main.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            await loadDashboardStats();
-            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        });
+<label class="label">Enter Password</label>
 
-        async function loadDashboardStats() {
-            try {
-                const response = await fetch('/api/dashboard/stats');
-                const data = await response.json();
-                
-                document.getElementById('stat-total-products').innerText = data.total_products;
-                document.getElementById('stat-total-sales').innerText = '₹' + parseFloat(data.total_sales).toFixed(2);
-                document.getElementById('stat-low-stock').innerText = data.low_stock_count;
-                document.getElementById('stat-recent-sales-count').innerText = data.recent_sales.length;
+<div class="input-wrap">
+<input type="password" id="pass" placeholder="Enter admin password">
+<i class="fas fa-eye" onclick="togglePass()" id="eye"></i>
+</div>
 
-                const tableBody = document.querySelector('#recent-sales-table tbody');
-                tableBody.innerHTML = '';
-                
-                data.recent_sales.forEach(sale => {
-                    const row = `
-                        <tr>
-                            <td>#${sale.sale_id}</td>
-                            <td>${new Date(sale.sale_date).toLocaleDateString()}</td>
-                            <td>${sale.staff_name}</td>
-                            <td>₹${parseFloat(sale.total_amount).toFixed(2)}</td>
-                            <td><span class="badge ${sale.payment_method}">${sale.payment_method}</span></td>
-                        </tr>
-                    `;
-                    tableBody.innerHTML += row;
-                });
+<button onclick="unlockPanel()">Unlock Dashboard</button>
 
-                const alertsList = document.getElementById('alerts-list');
-                alertsList.innerHTML = '';
-                if (data.low_stock_count > 0) {
-                    alertsList.innerHTML += `
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <div>
-                                <strong>Low Stock Warning</strong>
-                                <p>${data.low_stock_count} items are running low on stock. Please restock soon.</p>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    alertsList.innerHTML += `
-                        <div class="alert alert-info">
-                            <i class="fas fa-check-circle"></i>
-                            <div>
-                                <strong>All Good</strong>
-                                <p>Inventory levels are healthy across all categories.</p>
-                            </div>
-                        </div>
-                    `;
-                }
-            } catch (err) {
-                console.error('Error loading stats:', err);
-            }
-        }
-    </script>
+<div id="error"></div>
+
+<div class="footer">
+Authorized Access Only
+</div>
+
+</div>
+
+<script>
+const masterPassword = "Grocify@2026";
+
+function unlockPanel(){
+
+let val = document.getElementById("pass").value.trim();
+
+if(val === masterPassword){
+window.location.href = "Dashboard.html";
+}else{
+document.getElementById("error").innerText = "Incorrect password";
+document.getElementById("pass").value = "";
+}
+}
+
+function togglePass(){
+
+let p = document.getElementById("pass");
+let eye = document.getElementById("eye");
+
+if(p.type === "password"){
+p.type = "text";
+eye.classList.remove("fa-eye");
+eye.classList.add("fa-eye-slash");
+}else{
+p.type = "password";
+eye.classList.remove("fa-eye-slash");
+eye.classList.add("fa-eye");
+}
+}
+
+document.getElementById("pass").addEventListener("keypress",function(e){
+if(e.key === "Enter"){
+unlockPanel();
+}
+});
+</script>
+
 </body>
 </html>

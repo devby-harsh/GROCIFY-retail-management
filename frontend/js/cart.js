@@ -20,7 +20,7 @@ const fetchCartItems = async () => {
         let total = 0;
 
         if (!Array.isArray(cartItems) || cartItems.length === 0) {
-            cartContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 4rem; font-size: 1.1rem;">Your basket is currently empty. <a href="index.html" style="color: var(--primary); font-weight: 700; text-decoration: underline;">Discover our selection</a></p>';
+            cartContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 4rem; font-size: 1.1rem;">Your basket is currently empty. <a href="dashboard.html" style="color: var(--primary); font-weight: 700; text-decoration: underline;">Discover our selection</a></p>';
             if (cartTotal) cartTotal.style.display = 'none';
         } else {
             const table = document.createElement('table');
@@ -96,7 +96,7 @@ const handlePlaceOrder = async () => {
         const data = await res.json();
         if (res.ok) {
             alert('Your order has been received! Our curators are now preparing your selections. Order Reference: ' + (data.order_id || 'GRC-' + Date.now()));
-            window.location.href = 'index.html';
+            window.location.href = 'dashboard.html';
         } else {
             alert(data.message || 'There was an issue processing your order.');
         }

@@ -4,7 +4,7 @@ const checkAdmin = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user || user.role !== 'admin') {
         alert('Access denied. Administrator privileges required.');
-        window.location.href = 'index.html';
+        window.location.href = 'dashboard.html';  // Redirect to dashboard or login page
     }
 };
 

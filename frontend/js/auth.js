@@ -14,7 +14,7 @@ const handleLogin = async (e) => {
         const data = await res.json();
         if (res.ok) {
             localStorage.setItem('user', JSON.stringify(data));
-            window.location.href = 'index.html';
+            window.location.href = 'dashboard.html';  // Redirect to dashboard after successful login
         } else {
             alert(data.message || 'The credentials provided do not match our records.');
         }
@@ -52,7 +52,7 @@ const handleRegister = async (e) => {
 const logout = (e) => {
     if (e) e.preventDefault();
     localStorage.removeItem('user');
-    window.location.href = 'index.html';
+    window.location.href = 'dashboard.html';
 };
 
 const updateNav = () => {
